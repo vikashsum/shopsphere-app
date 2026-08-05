@@ -31,14 +31,14 @@ pipeline{
                 '''
             }
         }
-        post{
-            success{
+        post {
+            success {
                 echo "Build completed successfully"
             }
-            failure{
+            failure {
                 echo "Build failed"
             }
-            always{
+            always {
                 echo "Cleaning up workspace"
                 cleanWs()
             }
