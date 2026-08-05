@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
+        dockerRegistryCredential('dockerhub-credentials')
+    }
+    stages {
+        stage('checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+        stage('build docker image') {
+            steps {
+                sh 'docker build -t my-image:latest .'
+            }
+        }
+        stage('trivy scan') {
+            steps {
+                sh 'trivy image my-image:latest'
+            }
+        }
+        stage('Push docker image') {
+            steps {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    sh 'docker push my-image:latest'
+                }
+            }
+        }
+        stage('update helm ') { 
+            steps {
+                sh 'helm package ./helm-chart'
+            }
+        }
+        stage('helm push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'helm-repo-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'helm repo add my-repo https://my-helm-repo.com --username $USERNAME --password $PASSWORD'
+                    sh 'helm push ./my-chart-0.1.0.tgz my-repo'
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                withKubeConfig([credentialsId: 'kubeconfig-credentials']) {
+                    sh 'kubectl apply -f k8s/deployment.yaml'
+                }
+            }
+        }
+        post {
+            always {
+                cleanWs()
+            }
+        }
+        notifications {
+            email {
+                recipients 'dev-team@example.com'
+            }
+        }
+}       stage('success') {
+            steps {
+                echo 'Build and deployment successful!'
+            }
+        }
+        stage('failure') {
+            steps {
+                echo 'Build or deployment failed.'
+            }
+        }
+    }
+}
