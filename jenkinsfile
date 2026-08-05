@@ -1,49 +1,21 @@
 pipeline {
+
     agent any
 
-    environment {
-        APP_NAME = "shopsphere"
-        VERSION = "1.0.0"
-    }
-
     stages {
-        stage('Environment Info') {
+
+        stage('Checkout') {
+
             steps {
-                sh 'echo "Application: $APP_NAME"'
-                sh 'echo "Version: $VERSION"'
-                sh 'echo "Current Directory:"'
-                sh 'pwd'
+
+                echo "Checking out source code..."
+
+                checkout scm
+
             }
+
         }
 
-        stage('Workspace Inspection') {
-            steps {
-                sh 'echo "Listing workspace files..."'
-                sh 'ls -la'
-            }
-        }
-
-        stage('System Information') {
-            steps {
-                sh 'echo "Hostname:"'
-                sh 'hostname'
-                sh 'echo "Current User:"'
-                sh 'whoami'
-                sh 'echo "Docker Version:"'
-                sh 'docker --version || true'
-            }
-        }
     }
 
-    post {
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-        failure {
-            echo 'Pipeline failed.'
-        }
-        always {
-            echo 'Pipeline execution finished.'
-        }
-    }
 }
