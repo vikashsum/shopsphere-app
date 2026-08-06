@@ -1,45 +1,23 @@
 pipeline {
-
     agent any
-
-    stages {
-
-        stage('Checkout') {
-
-            steps {
-
-                echo "Checking out source code..."
-
-                checkout scm
-
+    {
+        stages {
+            stage('checkout') {
+                steps {
+                    checkout scm
+                }
             }
-
-        }
-        stage('Verify Checkout') {
-
-               steps {
-
-                  sh 'pwd'
-
-                  sh 'ls -la'
-
+            stage('build') {
+                steps {
+                    pip3 install -r requirements.txt   
+                }
             }
+            stage('validate application') {
+                steps {
+                    sh 'python3 --version'
 
-        }
-        stage('Jenkins Variable') {
-
-            steps {
-
-                sh 'echo "Jenkins Variable: $JOB_NAME"'
-
-                sh 'echo "Build Number: $BUILD_NUMBER"'
-
-                sh 'echo "Build URL: $BUILD_URL"'
-
-                sh 'echo "Branch Name: $BRANCH_NAME"'
-
-                sh 'echo "Workspace: $WORKSPACE"'
-
+                    sh 'ls -la src'
+                }
             }
         }
     }
