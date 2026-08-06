@@ -15,12 +15,17 @@ pipeline {
             }
 
         }
-        stage('verify checkout'){
-            sh 'pwd'
-            sh 'echo "Current Directory:"'
-            sh 'ls -al'
+        stage('Verify Checkout') {
+
+               steps {
+
+                  sh 'pwd'
+
+                  sh 'ls -la'
+
+            }
+
+        }
         }
 
     }
-
-}
